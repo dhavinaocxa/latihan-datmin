@@ -4,6 +4,19 @@ from nltk.tag import CRFTagger
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
+import urllib.request  # Untuk mengunduh file
+
+# Unduh model CRF jika belum ada
+MODEL_URL = "https://raw.githubusercontent.com/dhavinaocxa/latihan-datmin/main/all_indo_man_tag_corpus_model.crf.tagger"
+MODEL_PATH = "all_indo_man_tag_corpus_model.crf.tagger"
+
+try:
+    # Cek apakah file model sudah ada
+    with open(MODEL_PATH, "r") as f:
+        pass
+except FileNotFoundError:
+    st.write("Mengunduh model CRF...")
+    urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
 
 # Judul aplikasi
 st.title("POS Tagging, Filter Nouns, dan Analisis Sentimen")
@@ -24,7 +37,7 @@ if uploaded_file is not None:
         # POS Tagging
         st.write("Proses POS Tagging...")
         ct = CRFTagger()
-        ct.set_model_file('https://raw.githubusercontent.com/dhavinaocxa/latihan-datmin/main/all_indo_man_tag_corpus_model.crf.tagger')  # Ganti dengan model CRF Anda
+        ct.set_model_file(MODEL_PATH)  # Gunakan file lokal
 
         # Tagging setiap tweet
         tagged_tweets = [ct.tag_sents([tweet.split()])[0] for tweet in tweets]
