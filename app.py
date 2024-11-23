@@ -24,7 +24,7 @@ if uploaded_file is not None:
         # POS Tagging
         st.write("Proses POS Tagging...")
         ct = CRFTagger()
-        ct.set_model_file('all_indo_man_tag_corpus_model.crf.tagger')  # Ganti dengan model CRF Anda
+        ct.set_model_file('https://raw.githubusercontent.com/dhavinaocxa/latihan-datmin/main/all_indo_man_tag_corpus_model.crf.tagger')  # Ganti dengan model CRF Anda
 
         # Tagging setiap tweet
         tagged_tweets = [ct.tag_sents([tweet.split()])[0] for tweet in tweets]
