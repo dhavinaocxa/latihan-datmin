@@ -3,4 +3,4 @@ pandas
 scikit-learn
 nltk
 textblob
-matplotlib
+plotly
