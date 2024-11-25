@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
 from nltk.tag import CRFTagger
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
+from textblob import TextBlob  # Contoh untuk analisis sentimen sederhana
 import urllib.request  # Untuk mengunduh file
 
 # Unduh model CRF jika belum ada
@@ -60,29 +58,19 @@ if uploaded_file is not None:
             if data.empty:
                 st.error("Dataset tidak memiliki data yang valid setelah memfilter nilai kosong!")
             else:
-                # Data dummy untuk pelatihan
-                dummy_data = {
-                    "text": ["bagus", "buruk", "sangat menyenangkan", "sangat mengecewakan", "oke saja"],
-                    "sentiment": ["positif", "negatif", "positif", "negatif", "netral"]
-                }
-                dummy_df = pd.DataFrame(dummy_data)
+                # Analisis Sentimen menggunakan TextBlob (demo)
+                st.write("Proses Analisis Sentimen...")
+                sentiments = []
+                for tweet in data['filtered_nouns']:
+                    analysis = TextBlob(tweet)
+                    if analysis.sentiment.polarity > 0:
+                        sentiments.append("positif")
+                    elif analysis.sentiment.polarity < 0:
+                        sentiments.append("negatif")
+                    else:
+                        sentiments.append("netral")
 
-                # Vectorizer untuk semua data
-                vectorizer = CountVectorizer()
-                
-                # Fit vectorizer pada data dummy
-                dummy_X = vectorizer.fit_transform(dummy_df['text'])
-                dummy_y = dummy_df['sentiment']
-
-                # Train model
-                model = MultinomialNB()
-                model.fit(dummy_X, dummy_y)
-
-                # Transform dataset asli menggunakan vectorizer yang sama
-                X = vectorizer.transform(data['filtered_nouns'])
-
-                # Prediksi sentimen
-                data['predicted_sentiment'] = model.predict(X)
+                data['predicted_sentiment'] = sentiments
 
                 # Tampilkan dataset hasil tagging dan sentimen
                 st.write("Dataset dengan hasil POS tagging dan prediksi sentimen:")
