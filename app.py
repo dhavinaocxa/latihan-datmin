@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from nltk.tag import CRFTagger
 from textblob import TextBlob
-import matplotlib.pyplot as plt
+import plotly.express as px
 import urllib.request  # Untuk mengunduh file
 
 # Unduh model CRF jika belum ada
@@ -66,20 +66,31 @@ if uploaded_file is not None:
             # Tambahkan hasil sentimen ke dataset
             data['sentiment'] = sentiments
 
-            # Visualisasi hasil sentimen
-            st.write("Visualisasi Hasil Sentimen:")
-            sentiment_counts = data['sentiment'].value_counts()
-
-            fig, ax = plt.subplots()
-            sentiment_counts.plot(kind='bar', color=['green', 'red', 'blue'], ax=ax)
-            ax.set_title("Distribusi Sentimen")
-            ax.set_xlabel("Sentimen")
-            ax.set_ylabel("Jumlah")
-            st.pyplot(fig)
 
             # Tampilkan dataset hasil tagging dan sentimen
             st.write("Dataset dengan hasil POS tagging dan analisis sentimen:")
             st.dataframe(data[['tweet', 'pos_tagging', 'filtered_nouns', 'sentiment']])
+
+
+            # Distribusi hasil sentimen
+            st.write("Visualisasi Perbandingan Sentimen (Interaktif):")
+            sentiment_counts = data['sentiment'].value_counts().reset_index()
+            sentiment_counts.columns = ['Sentimen', 'Jumlah']
+            
+            # Membuat chart interaktif
+            fig = px.bar(
+                sentiment_counts,
+                x='Sentimen',
+                y='Jumlah',
+                color='Sentimen',
+                title='Distribusi Sentimen dari Tweet',
+                labels={'Jumlah': 'Jumlah Tweet'},
+                text='Jumlah',
+                color_discrete_map={'positif': 'green', 'negatif': 'red', 'netral': 'blue'}  # Warna khusus
+            )
+            
+            # Menampilkan chart di Streamlit
+            st.plotly_chart(fig)
 
             # Download dataset hasil
             csv = data.to_csv(index=False, encoding='utf-8')
