@@ -60,11 +60,6 @@ if uploaded_file is not None:
             if data.empty:
                 st.error("Dataset tidak memiliki data yang valid setelah memfilter nilai kosong!")
             else:
-                # Klasifikasi Sentimen
-                st.write("Proses Analisis Sentimen...")
-                vectorizer = CountVectorizer()
-                X = vectorizer.fit_transform(data['filtered_nouns'])  # Menggunakan hasil filter noun
-
                 # Data dummy untuk pelatihan
                 dummy_data = {
                     "text": ["bagus", "buruk", "sangat menyenangkan", "sangat mengecewakan", "oke saja"],
@@ -72,7 +67,10 @@ if uploaded_file is not None:
                 }
                 dummy_df = pd.DataFrame(dummy_data)
 
-                # Proses dummy ke fitur dan label
+                # Vectorizer untuk semua data
+                vectorizer = CountVectorizer()
+                
+                # Fit vectorizer pada data dummy
                 dummy_X = vectorizer.fit_transform(dummy_df['text'])
                 dummy_y = dummy_df['sentiment']
 
@@ -80,8 +78,11 @@ if uploaded_file is not None:
                 model = MultinomialNB()
                 model.fit(dummy_X, dummy_y)
 
+                # Transform dataset asli menggunakan vectorizer yang sama
+                X = vectorizer.transform(data['filtered_nouns'])
+
                 # Prediksi sentimen
-                data['predicted_sentiment'] = model.predict(X)  # Tambahkan hasil prediksi ke dataset
+                data['predicted_sentiment'] = model.predict(X)
 
                 # Tampilkan dataset hasil tagging dan sentimen
                 st.write("Dataset dengan hasil POS tagging dan prediksi sentimen:")
