@@ -30,15 +30,14 @@ if uploaded_file is not None:
         st.write("Dataset asli:")
         st.dataframe(data.head())  # Tampilkan dataset asli
 
-        # Asumsi kolom tweet bernama 'tweet' dan sentimen di 'sentiment'
-        if 'tweet' in data.columns and 'sentiment' in data.columns:
+        # Asumsi kolom tweet bernama 'tweet'
+        if 'tweet' in data.columns:
             tweets = data['tweet']
-            sentiments = data['sentiment']  # Kolom label sentimen, misalnya positif/negatif/netral
 
             # POS Tagging
             st.write("Proses POS Tagging...")
             ct = CRFTagger()
-            ct.set_model_file('all_indo_man_tag_corpus_model.crf.tagger')  # Ganti dengan path model CRF Anda
+            ct.set_model_file(MODEL_PATH)  # Path ke model CRF
 
             # Tagging setiap tweet
             tagged_tweets = [ct.tag_sents([tweet.split()])[0] for tweet in tweets]
@@ -56,7 +55,7 @@ if uploaded_file is not None:
 
             # Periksa dan hapus nilai kosong
             st.write("Memeriksa nilai kosong pada dataset...")
-            data.dropna(subset=['filtered_nouns', 'sentiment'], inplace=True)
+            data.dropna(subset=['filtered_nouns'], inplace=True)
 
             if data.empty:
                 st.error("Dataset tidak memiliki data yang valid setelah memfilter nilai kosong!")
@@ -65,25 +64,28 @@ if uploaded_file is not None:
                 st.write("Proses Analisis Sentimen...")
                 vectorizer = CountVectorizer()
                 X = vectorizer.fit_transform(data['filtered_nouns'])  # Menggunakan hasil filter noun
-                y = data['sentiment']
 
-                # Split data
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+                # Data dummy untuk pelatihan
+                dummy_data = {
+                    "text": ["bagus", "buruk", "sangat menyenangkan", "sangat mengecewakan", "oke saja"],
+                    "sentiment": ["positif", "negatif", "positif", "negatif", "netral"]
+                }
+                dummy_df = pd.DataFrame(dummy_data)
 
-                # Model Naive Bayes
+                # Proses dummy ke fitur dan label
+                dummy_X = vectorizer.fit_transform(dummy_df['text'])
+                dummy_y = dummy_df['sentiment']
+
+                # Train model
                 model = MultinomialNB()
-                model.fit(X_train, y_train)
+                model.fit(dummy_X, dummy_y)
 
                 # Prediksi sentimen
                 data['predicted_sentiment'] = model.predict(X)  # Tambahkan hasil prediksi ke dataset
 
-                # Evaluasi model
-                accuracy = model.score(X_test, y_test)
-                st.write(f"Akurasi Model: {accuracy * 100:.2f}%")
-
                 # Tampilkan dataset hasil tagging dan sentimen
                 st.write("Dataset dengan hasil POS tagging dan prediksi sentimen:")
-                st.dataframe(data[['tweet', 'pos_tagging', 'filtered_nouns', 'sentiment', 'predicted_sentiment']])
+                st.dataframe(data[['tweet', 'pos_tagging', 'filtered_nouns', 'predicted_sentiment']])
 
                 # Download dataset hasil
                 csv = data.to_csv(index=False, encoding='utf-8')
@@ -94,7 +96,7 @@ if uploaded_file is not None:
                     mime="text/csv"
                 )
         else:
-            st.warning("Dataset Anda harus memiliki kolom 'tweet' dan 'sentiment'.")
+            st.warning("Dataset Anda harus memiliki kolom 'tweet'.")
     except FileNotFoundError:
         st.error("Model CRF tidak ditemukan. Pastikan file model tersedia.")
     except Exception as e:
