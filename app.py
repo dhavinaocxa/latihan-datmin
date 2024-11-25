@@ -17,7 +17,7 @@ except FileNotFoundError:
     urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
 
 # Judul aplikasi
-st.title("POS Tagging, Filter Nouns, dan Analisis Sentimen")
+st.title("Analisis Sentimen")
 
 # Upload file
 uploaded_file = st.file_uploader("Upload dataset CSV Anda", type=["csv"])
@@ -73,7 +73,6 @@ if uploaded_file is not None:
 
 
             # Distribusi hasil sentimen
-            st.write("Visualisasi Perbandingan Sentimen (Interaktif):")
             sentiment_counts = data['sentiment'].value_counts().reset_index()
             sentiment_counts.columns = ['Sentimen', 'Jumlah']
             
